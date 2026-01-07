@@ -4,13 +4,12 @@ import os
 import requests
 from datetime import datetime
 from docxtpl import DocxTemplate
-# --- KODE DEBUG (Hapus nanti kalau sudah benar) ---
-st.write("Isi Secrets yang terbaca:", st.secrets)
-# --------------------------------------------------
+
 # ================= KONFIGURASI =================
-# Cuma butuh Token Telegram. Gak butuh Gemini lagi.
+# Cuma butuh Token Telegram.
 try:
-    TELEGRAM_TOKEN = st.secrets["8543332667:AAGD95v990MLCGiUYz1Xv7YSgqX8oU-bMYY"]
+    # PERBAIKAN: Panggil nama kuncinya ("TELEGRAM_TOKEN"), BUKAN isinya.
+    TELEGRAM_TOKEN = st.secrets["TELEGRAM_TOKEN"]
 except:
     st.error("Setting TELEGRAM_TOKEN belum ada di secrets.toml!")
     st.stop()
@@ -140,6 +139,4 @@ if st.button("🚀 KIRIM KE ADMIN", type="primary"):
                 else:
                     st.error(f"❌ Gagal Kirim Telegram: {msg}")
             except Exception as e:
-
                 st.error(f"System Error: {e}")
-
