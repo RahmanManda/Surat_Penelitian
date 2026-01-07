@@ -8,7 +8,7 @@ from docxtpl import DocxTemplate
 # ================= KONFIGURASI =================
 # Cuma butuh Token Telegram. Gak butuh Gemini lagi.
 try:
-    TELEGRAM_TOKEN = st.secrets["TELEGRAM_TOKEN"]
+    TELEGRAM_TOKEN = st.secrets["8543332667:AAGD95v990MLCGiUYz1Xv7YSgqX8oU-bMYY"]
 except:
     st.error("Setting TELEGRAM_TOKEN belum ada di secrets.toml!")
     st.stop()
@@ -138,4 +138,5 @@ if st.button("🚀 KIRIM KE ADMIN", type="primary"):
                 else:
                     st.error(f"❌ Gagal Kirim Telegram: {msg}")
             except Exception as e:
+
                 st.error(f"System Error: {e}")
