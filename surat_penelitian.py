@@ -4,7 +4,9 @@ import os
 import requests
 from datetime import datetime
 from docxtpl import DocxTemplate
-
+# --- KODE DEBUG (Hapus nanti kalau sudah benar) ---
+st.write("Isi Secrets yang terbaca:", st.secrets)
+# --------------------------------------------------
 # ================= KONFIGURASI =================
 # Cuma butuh Token Telegram. Gak butuh Gemini lagi.
 try:
@@ -140,3 +142,4 @@ if st.button("🚀 KIRIM KE ADMIN", type="primary"):
             except Exception as e:
 
                 st.error(f"System Error: {e}")
+
