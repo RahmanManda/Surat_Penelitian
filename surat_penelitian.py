@@ -129,7 +129,11 @@ if st.button("🚀 KIRIM KE ADMIN", type="primary"):
                 
                 doc = DocxTemplate(TEMPLATE_FILENAME)
                 doc.render(ctx)
-                out = f"Rekom_{d['nim']}.docx"
+                # Ambil nama depan saja & bersihkan simbol aneh
+                nama_depan = d['nama'].strip().split()[0]
+                nama_clean = "".join(x for x in nama_depan if x.isalnum())
+                # Jadikan nama file
+                out = f"Rekom_{nama_clean}.docx"out = f"Rekom_{d['nim']}.docx"
                 doc.save(out)
                 
                 sukses, msg = kirim_ke_admin_telegram(out, d)
