@@ -6,9 +6,7 @@ from datetime import datetime
 from docxtpl import DocxTemplate
 
 # ================= KONFIGURASI =================
-# Cuma butuh Token Telegram.
 try:
-    # PERBAIKAN: Panggil nama kuncinya ("TELEGRAM_TOKEN"), BUKAN isinya.
     TELEGRAM_TOKEN = st.secrets["TELEGRAM_TOKEN"]
 except:
     st.error("Setting TELEGRAM_TOKEN belum ada di secrets.toml!")
@@ -28,7 +26,21 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# ================= FUNGSI LOGIKA =================
+# ================= FUNGSI LOGIKA BARU =================
+
+def format_sem_otomatis(angka):
+    """
+    Mengubah angka '7' menjadi 'VII (Tujuh)' secara otomatis.
+    """
+    try:
+        n = int(angka)
+        rom = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV"]
+        txt = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas", "Dua Belas", "Tiga Belas", "Empat Belas"]
+        if 0 < n < 15:
+            return f"{rom[n]} ({txt[n]})"
+        return str(angka)
+    except:
+        return str(angka) # Kembalikan asli jika bukan angka
 
 def tentukan_tembusan_tiga(lokasi, jabatan_manual):
     lokasi_lower = lokasi.lower()
@@ -48,7 +60,7 @@ def kirim_ke_admin_telegram(file_path, data_mhs):
     
     caption = (
         f"🚨 **PERMOHONAN IZIN PENELITIAN**\n"
-        f"👤 {data_mhs['nama']} ({data_mhs['nim']})\n"
+        f"👤 {data_mhs['nama'].upper()} ({data_mhs['nim']})\n"
         f"🏢 Tujuan: {data_mhs['jabatan_tujuan']}\n"
         f"📍 Lokasi: {data_mhs['lokasi_tujuan']}\n"
         f"📱 WA: [{wa}](https://wa.me/{wa_link})\n\n"
@@ -87,7 +99,7 @@ d = st.session_state.data
 d['nama'] = st.text_input("Nama Mahasiswa", d['nama'])
 c1, c2 = st.columns(2)
 with c1: d['nim'] = st.text_input("NIM", d['nim'])
-with c2: d['sem'] = st.text_input("Semester (Contoh: VII (Tujuh))", d['sem'])
+with c2: d['sem'] = st.text_input("Semester (Cukup tulis angka, misal: 7)", d['sem'])
 d['prodi'] = st.text_input("Program Studi", d.get('prodi', 'Pendidikan Bahasa Arab'))
 d['judul'] = st.text_area("Judul Penelitian", d['judul'])
 
@@ -110,15 +122,16 @@ if st.button("🚀 KIRIM KE ADMIN", type="primary"):
                 now = datetime.now()
                 bln_indo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
                 
-                # Logika Tembusan
+                # Logika Tembusan & Semester
                 txt_tembusan_3 = tentukan_tembusan_tiga(d['lokasi_tujuan'], d['jabatan_tujuan'])
+                txt_semester_lengkap = format_sem_otomatis(d['sem']) # <--- LOGIKA ROMAWI
 
                 ctx = {
-                    'nama': d['nama'], 
+                    'nama': d['nama'].upper(),  # <--- LOGIKA HURUF BESAR
                     'nim': d['nim'], 
-                    'semester': d['sem'],
-                    'prodi': d['prodi'], 
-                    'judul': d['judul'],
+                    'semester': txt_semester_lengkap, # Hasil: VII (Tujuh)
+                    'prodi': d['prodi'].upper(), # <--- LOGIKA HURUF BESAR
+                    'judul': d['judul'].upper(), # <--- LOGIKA HURUF BESAR
                     'jabatan_tujuan': d['jabatan_tujuan'],
                     'lokasi_tujuan': d['lokasi_tujuan'],
                     'tanggal_surat': f"{now.day} {bln_indo[now.month-1]} {now.year}",
@@ -129,17 +142,19 @@ if st.button("🚀 KIRIM KE ADMIN", type="primary"):
                 
                 doc = DocxTemplate(TEMPLATE_FILENAME)
                 doc.render(ctx)
-                # Ambil nama depan saja & bersihkan simbol aneh
+                
+                # --- LOGIKA NAMA FILE (Nama Depan) ---
                 nama_depan = d['nama'].strip().split()[0]
                 nama_clean = "".join(x for x in nama_depan if x.isalnum())
-                # Jadikan nama file
-                out = f"Rekom_{nama_clean}.docx"
+                out = f"Rekom_{nama_clean}.docx" 
+                # -------------------------------------
+                
                 doc.save(out)
                 
                 sukses, msg = kirim_ke_admin_telegram(out, d)
                 if sukses:
                     st.balloons()
-                    st.success("✅ BERHASIL! Surat permohonan sudah dikirim ke Admin.")
+                    st.success(f"✅ BERHASIL! File '{out}' sudah dikirim ke Admin.")
                 else:
                     st.error(f"❌ Gagal Kirim Telegram: {msg}")
             except Exception as e:
